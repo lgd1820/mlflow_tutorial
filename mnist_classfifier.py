@@ -9,7 +9,7 @@ from model import Mnist
 @env(infer_pip_packages=True)
 @artifacts([PytorchModelArtifact('model')])
 class MnistClassfier(BentoService):
-    @api(input=JsonInput(), batch=True)
-    def predict(self, input):
-        inputs = torch.Tensor(input[0]["image"])
-        return self.artifacts.model.predict(inputs)
+    @api(input=JsonInput())
+    def predict(self, inputs):
+        inputs = torch.Tensor(inputs["image"])
+        return self.artifacts.model(inputs)
