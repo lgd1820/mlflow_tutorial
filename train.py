@@ -5,7 +5,8 @@ from torch.utils.data import DataLoader
 import torch.nn as nn
 import matplotlib.pyplot as plt
 import random
-import mlflow
+
+from model import Mnist
 
 USE_CUDA = torch.cuda.is_available() # GPU를 사용가능하면 True, 아니라면 False를 리턴
 device = torch.device("cuda" if USE_CUDA else "cpu") # GPU 사용 가능하면 사용하고 아니면 CPU 사용
@@ -38,10 +39,11 @@ data_loader = DataLoader(dataset=mnist_train,
                                           shuffle=True,
                                           drop_last=True)
 
-linear = nn.Linear(784, 10, bias=True).to(device)
+model = Mnist()
+model.to(device)
 
 criterion = nn.CrossEntropyLoss().to(device) 
-optimizer = torch.optim.SGD(linear.parameters(), lr=0.1)
+optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
 
 for epoch in range(training_epochs): 
     avg_cost = 0
@@ -52,7 +54,7 @@ for epoch in range(training_epochs):
         Y = Y.to(device)
 
         optimizer.zero_grad()
-        hypothesis = linear(X)
+        hypothesis = model(X)
         cost = criterion(hypothesis, Y)
         cost.backward()
         optimizer.step()
@@ -62,3 +64,5 @@ for epoch in range(training_epochs):
     print('Epoch:', '%04d' % (epoch + 1), 'cost =', '{:.9f}'.format(avg_cost))
 
 print('Learning finished')
+
+torch.save(model.state_dict(), "save_model/model.pt")

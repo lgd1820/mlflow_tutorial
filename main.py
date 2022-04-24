@@ -1,12 +1,12 @@
-from iris_classifier import IrisClassifier
-from sklearn import svm
-from sklearn import datasets
-	
-iris = datasets.load_iris()
-X, y = iris.data, iris.target
-clf = svm.SVC(gamma='scale')
-clf.fit(X, y)
+import torch
 
-iris_classifier_service = IrisClassifier()
-iris_classifier_service.pack('model', clf)
-saved_path = iris_classifier_service.save()
+from mnist_classfifier import MnistClassfier
+from model import Mnist
+
+
+model = Mnist()
+model.load_state_dict(torch.load("save_model/model.pt"))
+
+mnist_classifier_service = MnistClassfier()
+mnist_classifier_service.pack('model', model)
+saved_path = mnist_classifier_service.save()
