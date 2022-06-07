@@ -3,8 +3,8 @@ import torchvision.datasets as dsets
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 import torch.nn as nn
-import matplotlib.pyplot as plt
 import random
+import mlflow
 
 from model import Mnist
 
@@ -39,29 +39,33 @@ data_loader = DataLoader(dataset=mnist_train,
                                           shuffle=True,
                                           drop_last=True)
 
-model = Mnist()
-model.to(device)
 
-criterion = nn.CrossEntropyLoss().to(device) 
-optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+with mlflow.start_run():
+    model = Mnist()
+    model.to(device)
 
-for epoch in range(training_epochs): 
-    avg_cost = 0
-    total_batch = len(data_loader)
+    criterion = nn.CrossEntropyLoss().to(device) 
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
 
-    for X, Y in data_loader:
-        X = X.view(-1, 28 * 28).to(device)
-        Y = Y.to(device)
+    for epoch in range(training_epochs): 
+        avg_cost = 0
+        total_batch = len(data_loader)
 
-        optimizer.zero_grad()
-        hypothesis = model(X)
-        cost = criterion(hypothesis, Y)
-        cost.backward()
-        optimizer.step()
+        for X, Y in data_loader:
+            X = X.view(-1, 28 * 28).to(device)
+            Y = Y.to(device)
 
-        avg_cost += cost / total_batch
+            optimizer.zero_grad()
+            hypothesis = model(X)
+            cost = criterion(hypothesis, Y)
+            cost.backward()
+            optimizer.step()
 
-    print('Epoch:', '%04d' % (epoch + 1), 'cost =', '{:.9f}'.format(avg_cost))
+            avg_cost += cost / total_batch
+        
+        mlflow.log_metric("avg_cost", avg_cost.item())
+
+        print('Epoch:', '%04d' % (epoch + 1), 'cost =', '{:.9f}'.format(avg_cost))
 
 print('Learning finished')
 
